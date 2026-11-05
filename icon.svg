@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="100" fill="#F8F4EA"/>
+  <rect x="12" y="12" width="488" height="488" rx="90" fill="none" stroke="#E5DCCB" stroke-width="5"/>
+  <path d="M105 250 Q256 70 405 250 Q256 430 105 250" fill="none" stroke="#A88E70" stroke-width="5" stroke-linecap="round"/>
+  <text x="256" y="310" text-anchor="middle" font-family="Georgia,serif" font-size="245" font-weight="bold" fill="#45372D">N</text>
+  <path d="M300 365 Q350 335 400 365 L400 420 Q350 390 300 420 Z" fill="#E8D9C2" stroke="#80664D" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M300 365 Q250 335 200 365 L200 420 Q250 390 300 420 Z" fill="#F1E7D6" stroke="#80664D" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M300 365 V420" stroke="#80664D" stroke-width="4"/>
+  <path d="M125 115 l8 18 18 8 -18 8 -8 18 -8 -18 -18 -8 18 -8z" fill="#A88E70"/>
+  <text x="256" y="475" text-anchor="middle" font-family="Georgia,serif" font-size="38" letter-spacing="12" fill="#45372D">NOOK</text>
+</svg>
