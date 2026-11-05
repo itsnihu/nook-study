@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f5f1e9">
+<title>NOOK — Study Space</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f1e9;color:#39372f;font-family:Arial,sans-serif}
+main{max-width:650px;margin:auto;padding:22px}
+header{display:flex;align-items:center;gap:13px;margin-bottom:25px}
+.logo{background:#fffdf8;border:1px solid #e5ded2;border-radius:15px;padding:12px 18px;font:bold 30px Georgia}
+h1{font:26px Georgia;letter-spacing:3px;margin:0}
+small,.muted{color:#898477}
+nav{display:flex;gap:7px;overflow:auto;margin-bottom:16px}
+button{padding:11px 14px;border:1px solid #e5ded2;border-radius:12px;background:#fffdf8;color:#39372f;font-size:14px}
+button.active,.primary{background:#39372f;color:white}
+.card{background:#fffdf8;border:1px solid #e5ded2;border-radius:18px;padding:18px;margin:12px 0}
+.view{display:none}.view.active{display:block}
+h2{font:25px Georgia}
+input,textarea,select{width:100%;padding:12px;margin:7px 0 12px;border:1px solid #e5ded2;border-radius:10px;background:#fffefa;font:inherit}
+textarea{min-height:100px}
+.timer{font:55px Georgia;text-align:center;margin:22px}
+.center{text-align:center}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row>*{flex:1}
+.item{border-bottom:1px solid #eee7dc;padding:12px 0}
+.done{text-decoration:line-through;color:#999}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:#f5f1e9;padding:14px;border-radius:12px}
+.stat strong{display:block;font:27px Georgia;margin-top:6px}
+footer{text-align:center;color:#999;font:italic 14px Georgia;padding:25px}
+</style>
+</head>
+<body>
+<main>
+<header><div class="logo">N</div><div><h1>NOOK</h1><small>Your little study space</small></div></header>
+<nav>
+<button class="active" data-tab="home">Today</button>
+<button data-tab="focus">Focus</button>
+<button data-tab="notes">Notes</button>
+<button data-tab="tasks">Homework</button>
+<button data-tab="progress">Progress</button>
+</nav>
+
+<section id="home" class="view active">
+<div class="card"><small id="date"></small><h2>A little progress is enough.</h2><p class="muted">Take a breath. Begin with one small thing.</p></div>
+<div class="card"><b>Today's goal</b><p><label><input type="checkbox" id="goal" style="width:auto"> I showed up for my studies today.</label></p></div>
+<div class="card"><b>Today's homework</b><div id="todayTasks"></div></div>
+<div class="card"><b>Focus sessions today</b><h2 id="todaySessions">0</h2></div>
+</section>
+
+<section id="focus" class="view">
+<div class="card center"><small>QUIET FOCUS TIME</small>
+<div class="timer" id="clock">25:00</div>
+<div class="row">
+<button data-min="25">25 min</button>
+<button data-min="45">45 min</button>
+<button data-min="60">60 min</button>
+</div>
+<p><button class="primary" id="start">Start</button> <button id="reset">Reset</button></p>
+<p class="muted" id="hint">One thing at a time.</p></div>
+</section>
+
+<section id="notes" class="view">
+<div class="card"><h2>Your notes</h2>
+<select id="subject"><option>Mathematics</option><option>Science</option><option>English</option><option>History</option><option>Other</option></select>
+<input id="ntitle" placeholder="Note title">
+<textarea id="nbody" placeholder="Write your notes..."></textarea>
+<button class="primary" id="saveNote">Save note</button></div>
+<div class="card"><b>Saved notes</b><div id="noteList"></div></div>
+</section>
+
+<section id="tasks" class="view">
+<div class="card"><h2>Homework tracker</h2>
+<input id="taskInput" placeholder="What do you need to do?">
+<select id="taskSubject"><option>Mathematics</option><option>Science</option><option>English</option><option>History</option><option>Other</option></select>
+<button class="primary" id="addTask">Add homework</button></div>
+<div class="card"><b>Your tasks</b><div id="taskList"></div></div>
+</section>
+
+<section id="progress" class="view">
+<div class="card"><h2>Your progress</h2>
+<div class="stats">
+<div class="stat">Focus sessions<strong id="sessions">0</strong></div>
+<div class="stat">Focus minutes<strong id="minutes">0</strong></div>
+<div class="stat">Tasks completed<strong id="completed">0</strong></div>
+<div class="stat">Notes saved<strong id="notesCount">0</strong></div>
+</div><p class="muted">Every little step counts.</p></div>
+</section>
+<footer>Grow at your own pace.</footer>
+</main>
+<script>
+const KEY="nook-v1";
+let data={notes:[],tasks:[],sessions:[],goals:{}};
+try{data={...data,...JSON.parse(localStorage.getItem(KEY)||"{}")}}catch(e){}
+const $=id=>document.getElementById(id);
+const day=()=>new Date().toISOString().slice(0,10);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){alert("Storage unavailable in this browser.")}render()}
+$("date").textContent=new Date().toDateString();
+document.querySelector("nav").onclick=e=>{
+let b=e.target.closest("[data-tab]");if(!b)return;
+document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x===b));
+document.querySelectorAll(".view").forEach(x=>x.classList.toggle("active",x.id===b.dataset.tab));
+render();
+};
+$("goal").checked=!!data.goals[day()];
+$("goal").onchange=()=>{data.goals[day()]=$("goal").checked;save()};
+$("saveNote").onclick=()=>{
+let title=$("ntitle").value.trim(),body=$("nbody").value.trim();
+if(!title||!body)return alert("Please add a title and note.");
+data.notes.unshift({id:Date.now(),title,body,subject:$("subject").value});
+$("ntitle").value="";$("nbody").value="";save();
+};
+$("addTask").onclick=()=>{
+let title=$("taskInput").value.trim();if(!title)return;
+data.tasks.unshift({id:Date.now(),title,subject:$("taskSubject").value,done:false,date:day()});
+$("taskInput").value="";save();
+};
+$("taskList").onclick=e=>{
+let id=e.target.dataset.del;if(id){data.tasks=data.tasks.filter(t=>t.id!=id);save()}
+};
+$("taskList").onchange=e=>{
+let id=e.target.dataset.check;if(id){let t=data.tasks.find(t=>t.id==id);if(t)t.done=e.target.checked;save()}
+};
+$("noteList").onclick=e=>{
+let id=e.target.dataset.noteDel;if(id){data.notes=data.notes.filter(n=>n.id!=id);save()}
+};
+let total=1500,left=1500,tick=null,running=false;
+function clock(){ $("clock").textContent=String(Math.floor(left/60)).padStart(2,"0")+":"+String(left%60).padStart(2,"0")}
+function stop(){clearInterval(tick);tick=null;running=false;$("start").textContent="Start"}
+function reset(){stop();left=total;clock()}
+$("start").onclick=()=>{
+if(running){stop();$("start").textContent="Resume";return}
+running=true;$("start").textContent="Pause";
+tick=setInterval(()=>{
+left--;clock();
+if(left<=0){stop();data.sessions.push({date:day(),minutes:total/60});save();left=total;clock();$("hint").textContent="Session complete. Well done!";alert("Focus session complete! Well done.");}
+},1000);
+};
+$("reset").onclick=reset;
+document.querySelectorAll("[data-min]").forEach(b=>b.onclick=()=>{
+stop();total=Number(b.dataset.min)*60;left=total;clock();$("hint").textContent="Ready when you are.";
+});
+function render(){
+$("goal").checked=!!data.goals[day()];
+$("todayTasks").innerHTML=data.tasks.filter(t=>t.date===day()).map(t=>`<div class="item ${t.done?"done":""}">${esc(t.title)}</div>`).join("")||'<p class="muted">Nothing here yet.</p>';
+$("todaySessions").textContent=data.sessions.filter(s=>s.date===day()).length;
+$("noteList").innerHTML=data.notes.map(n=>`<div class="item"><b>${esc(n.title)}</b><p class="muted">${esc(n.subject)}</p><p>${esc(n.body).replace(/\n/g,"<br>")}</p><button data-note-del="${n.id}">Delete</button></div>`).join("")||'<p class="muted">No notes yet.</p>';
+$("taskList").innerHTML=data.tasks.map(t=>`<div class="item"><label class="${t.done?"done":""}"><input style="width:auto" type="checkbox" data-check="${t.id}" ${t.done?"checked":""}> ${esc(t.title)} · ${esc(t.subject)}</label> <button data-del="${t.id}">Delete</button></div>`).join("")||'<p class="muted">No homework yet.</p>';
+$("sessions").textContent=data.sessions.length;
+$("minutes").textContent=data.sessions.reduce((a,s)=>a+s.minutes,0);
+$("completed").textContent=data.tasks.filter(t=>t.done).length;
+$("notesCount").textContent=data.notes.length;
+}
+render();clock();
+</script>
+</body>
+</html>
